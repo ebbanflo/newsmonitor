@@ -1,0 +1,16 @@
+{
+  "name": "WAR ROOM // Global News Monitor",
+  "short_name": "War Room",
+  "description": "Real-time war-room news monitor across four desks with importance ranking, breaking alerts and threat maps.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#080a0f",
+  "theme_color": "#ff3b3b",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
