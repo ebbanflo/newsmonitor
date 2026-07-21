@@ -9,13 +9,16 @@
   --accent:var(--red);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
+html,body{height:100%;width:100%;overflow-x:hidden;overscroll-behavior-x:none}
 body{
   background:
     radial-gradient(1200px 600px at 80% -10%, rgba(255,59,59,.06), transparent 60%),
     radial-gradient(1000px 500px at 0% 110%, rgba(74,139,255,.05), transparent 60%),
     var(--bg);
-  color:var(--txt); font-family:var(--sans); font-size:14px; line-height:1.4; overflow-x:hidden;
+  color:var(--txt); font-family:var(--sans); font-size:14px; line-height:1.4;
+  /* lock horizontal: no content overflows, so this kills only the sideways
+     overscroll rubber-band that let the page be nudged left/right on touch */
+  overflow-x:hidden; overscroll-behavior-x:none;
 }
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;
   background:repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
