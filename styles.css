@@ -221,3 +221,10 @@ footer b{color:var(--txt2)}
 @keyframes eq{0%,100%{transform:scaleY(.4)}50%{transform:scaleY(1)}}
 @keyframes flash{0%,100%{background:rgba(255,178,59,0)}50%{background:rgba(255,178,59,.18)}}
 .just-in{animation:flash 1.6s ease 2}
+
+/* mobile: drop the inner scroll on the breaking/stories lists so the page
+   scrolls as ONE document. Nested overflow:auto areas otherwise trap
+   touch-scroll. Declared last so it overrides the base list rules above. */
+@media(max-width:1000px){
+  .breaking-list,.stories-list{max-height:none;overflow:visible}
+}
