@@ -1,0 +1,50 @@
+name: Refresh news feeds
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'   # every 10 minutes
+  workflow_dispatch: {}        # allow manual runs
+  push:
+    branches: [ claude/news-monitor-dashboard-1s2bwx, main ]
+    paths:
+      - 'engine-core.js'
+      - 'scripts/fetch-feeds.js'
+      - '.github/workflows/feeds.yml'
+
+# allow the job to push the regenerated data/ back to the branch
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-feeds-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch & parse feeds
+        run: node scripts/fetch-feeds.js
+
+      - name: Commit refreshed data
+        run: |
+          git config user.name  "news-bot"
+          git config user.email "actions@github.com"
+          git add data/feeds.json data/history.json
+          if git diff --staged --quiet; then
+            echo "No feed changes."
+          else
+            git commit -m "chore(data): refresh feeds [skip ci]"
+            # rebase-safe push in case another run landed first
+            for i in 1 2 3; do
+              git pull --rebase --autostash origin "${GITHUB_REF_NAME}" || true
+              git push origin "HEAD:${GITHUB_REF_NAME}" && break
+              sleep $((i*3))
+            done
+          fi
