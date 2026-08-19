@@ -14,7 +14,7 @@ const ENGINE = require('../engine-core.js');
 const ROOT = path.join(__dirname, '..');
 const DATA = path.join(ROOT, 'data');
 const MAX_AGE_HRS = 30;
-const PER_SECTION = 45;
+const PER_SECTION = 55;
 const TIMEOUT = 15000;
 
 function log(...a) { console.log('[fetch]', ...a); }

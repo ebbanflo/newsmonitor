@@ -2,57 +2,137 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WAR ROOM // Global News Monitor</title>
-<meta name="description" content="Real-time war-room news monitor: four desks, importance ranking, breaking alerts and threat maps.">
-<meta name="theme-color" content="#ff3b3b">
-<link rel="manifest" href="./manifest.webmanifest">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>War Room — World &amp; U.S. Monitor</title>
+<meta name="description" content="A live monitor for world affairs and U.S. national news: ranked by importance, breaking alerts, and story-density maps.">
+
+<!-- iOS home-screen app -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="War Room">
+<meta name="theme-color" content="#0A0C11">
+<meta name="format-detection" content="telephone=no">
+<link rel="apple-touch-icon" href="./icon-180.png">
 <link rel="icon" href="./icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="./icon.svg">
+<link rel="manifest" href="./manifest.webmanifest">
+
+<!-- iOS launch screens -->
+<link rel="apple-touch-startup-image" href="./splash/1290x2796.png" media="(device-width:430px) and (device-height:932px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)">
+<link rel="apple-touch-startup-image" href="./splash/1284x2778.png" media="(device-width:428px) and (device-height:926px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)">
+<link rel="apple-touch-startup-image" href="./splash/1179x2556.png" media="(device-width:393px) and (device-height:852px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)">
+<link rel="apple-touch-startup-image" href="./splash/1170x2532.png" media="(device-width:390px) and (device-height:844px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)">
+<link rel="apple-touch-startup-image" href="./splash/1125x2436.png" media="(device-width:375px) and (device-height:812px) and (-webkit-device-pixel-ratio:3) and (orientation:portrait)">
+<link rel="apple-touch-startup-image" href="./splash/828x1792.png" media="(device-width:414px) and (device-height:896px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)">
+<link rel="apple-touch-startup-image" href="./splash/750x1334.png" media="(device-width:375px) and (device-height:667px) and (-webkit-device-pixel-ratio:2) and (orientation:portrait)">
 <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <div class="logo"></div>
-    <h1>WAR ROOM<small>GLOBAL NEWS MONITOR</small></h1>
+<!-- ============ SVG SPRITE ============ -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-globe" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+    <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 3.9 5.6 3.9 9s-1.3 6.4-3.9 9c-2.6-2.6-3.9-5.6-3.9-9S9.4 5.6 12 3z"/>
+  </symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 21V4M4 4h11l-1.6 3.4L15 11H4"/>
+  </symbol>
+  <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+    <path d="M12 3.6l2.5 5.2 5.6.8-4 4 .9 5.7-5-2.7-5 2.7.9-5.7-4-4 5.6-.8z"/>
+  </symbol>
+  <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+    <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/>
+  </symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20 11a8 8 0 1 0-.7 4.3"/><path d="M20 4.5V11h-6.2"/>
+  </symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M5 8.5l7 7 7-7"/>
+  </symbol>
+  <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+    <path d="M6 6l12 12M18 6L6 18"/>
+  </symbol>
+  <symbol id="i-quiet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 21a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zM6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5h-15S6 13 6 9z"/>
+  </symbol>
+  <symbol id="i-mark" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.7">
+    <circle cx="16" cy="16" r="12.2"/>
+    <ellipse cx="16" cy="16" rx="5.4" ry="12.2"/>
+    <path d="M4.4 12.2h23.2M4.4 19.8h23.2" stroke-linecap="round"/>
+    <circle cx="16" cy="16" r="2.6" fill="currentColor" stroke="none"/>
+  </symbol>
+</svg>
+
+<!-- ============ TOP BAR ============ -->
+<header class="appbar">
+  <div class="appbar-in">
+    <div class="wordmark">
+      <svg class="mark"><use href="#i-mark"/></svg>
+      <div>
+        <div class="wm-t">War Room</div>
+        <div class="wm-s" id="deskName">World Affairs</div>
+      </div>
+    </div>
+    <div class="bar-sp"></div>
+    <div class="livepill" id="livePill"><span class="livedot"></span><span id="liveTxt">Standby</span></div>
+    <div class="clock" id="clock">--:--</div>
+    <button class="iconbtn" id="btnRefresh" aria-label="Refresh"><svg><use href="#i-refresh"/></svg></button>
   </div>
-  <div class="hstat"><div class="n" id="stat-feeds">0</div><div class="l">Feeds Live</div></div>
-  <div class="hstat"><div class="n" id="stat-stories">0</div><div class="l">Stories</div></div>
-  <div class="hstat"><div class="n" id="stat-breaking">0</div><div class="l">Breaking</div></div>
-  <div class="hspace"></div>
-  <button class="refresh-btn" id="refreshBtn"><span class="ico">⟳</span> REFRESH <span class="countdown" id="countdown"></span></button>
-  <div class="clock"><div class="utc" id="clock-utc">--:--:--</div><div class="local" id="clock-local">--</div></div>
 </header>
 
-<div class="ticker" id="ticker">
-  <div class="ticker-tag">BREAKING</div>
-  <div class="ticker-track" id="tickerTrack"><span class="ticker-empty">Awaiting incoming wire… monitoring feeds…</span></div>
+<!-- ============ BREAKING STRIP ============ -->
+<div class="strip" id="strip">
+  <div class="strip-tag"><i></i>Breaking</div>
+  <div class="strip-track" id="stripTrack"><span class="strip-empty">Monitoring the wire…</span></div>
 </div>
 
-<nav class="tabs" id="tabs">
-  <div class="tab active" data-sec="global" style="--tab-accent:var(--red)"><span class="dot"></span>Global World <span class="cnt" id="cnt-global">–</span></div>
-  <div class="tab" data-sec="us" style="--tab-accent:var(--blue)"><span class="dot"></span>US National <span class="cnt" id="cnt-us">–</span></div>
-  <div class="tab" data-sec="ai" style="--tab-accent:var(--cyan)"><span class="dot"></span>AI News <span class="cnt" id="cnt-ai">–</span></div>
-  <div class="tab" data-sec="good" style="--tab-accent:var(--green)"><span class="dot"></span>Good News <span class="cnt" id="cnt-good">–</span></div>
-</nav>
+<!-- ============ DESKTOP TABS ============ -->
+<nav class="deskbar" id="deskbar"></nav>
 
-<div class="controls">
-  <div class="ctl"><span class="ci">🔍</span><input id="searchInput" type="text" placeholder="search this desk…" autocomplete="off"></div>
-  <div class="ctl watch"><span class="ci">★</span><input id="watchInput" type="text" placeholder="watch keyword + Enter" autocomplete="off"></div>
-  <div class="chiplist" id="watchChips"></div>
-  <button class="toggle" id="alertsBtn"><span class="tled"></span><span class="tlabel">ALERTS</span></button>
-  <div class="sync" id="sync"><span class="sled"></span>STANDBY</div>
-</div>
+<!-- ============ PULL TO REFRESH ============ -->
+<div class="ptr" id="ptr"><svg><use href="#i-chev"/></svg><span id="ptrTxt">Pull to refresh</span></div>
 
-<main id="main"></main>
+<main id="main">
+  <!-- desk pages injected here -->
+  <section class="page" id="page-watch">
+    <div class="card">
+      <div class="section-block">
+        <div class="field">
+          <svg><use href="#i-star"/></svg>
+          <input id="watchInput" type="text" placeholder="Add a keyword to watch…" autocomplete="off" autocapitalize="none">
+        </div>
+        <p class="hint" style="margin-top:11px">Stories matching a watched keyword are pinned to the top of every desk and can trigger an alert.</p>
+        <div class="chips" id="watchChips"></div>
+      </div>
 
-<footer>
-  WAR ROOM // GLOBAL NEWS MONITOR — aggregating <b id="foot-outlets">--</b> free news outlets across 4 desks · client-side, no tracking, no keys.
-  Importance = urgency keywords + recency + cross-outlet corroboration + coverage velocity. Country/state heat reflects weighted story mentions.<br>
-  Feeds are pre-fetched by a GitHub Action (<code>data/feeds.json</code>) with a live CORS-relay fallback · Last sync <span id="foot-sync">never</span> · Auto-refresh every 5 min.
-</footer>
+      <div class="section-block">
+        <div class="block-t"><h3>Alerts</h3></div>
+        <div class="switch">
+          <div class="lbl"><b>Breaking &amp; watchlist alerts</b><span>Plays a tone and posts a notification for new critical stories.</span></div>
+          <button class="track" id="alertToggle" aria-label="Toggle alerts"><i></i></button>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <div class="block-t"><h3>Feed health</h3><span class="c" id="feedCount">—</span></div>
+        <div class="feedgrid" id="feedHealth"></div>
+      </div>
+
+      <div class="section-block">
+        <div class="block-t"><h3>About</h3></div>
+        <p class="hint" id="aboutTxt">
+          War Room aggregates 28 free news feeds across two desks. Importance is scored from urgency
+          language, recency, cross-outlet corroboration and coverage velocity. Country and state heat
+          reflects weighted story mentions. No accounts, no tracking, no API keys.
+        </p>
+        <p class="hint" style="margin-top:10px" id="syncTxt">Last sync: never</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ BOTTOM TAB BAR ============ -->
+<nav class="tabbar" id="tabbar"></nav>
 
 <div class="maptip" id="maptip"></div>
 
