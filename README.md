@@ -1,70 +1,67 @@
-# WAR ROOM // Global News Monitor
+# War Room — World &amp; U.S. Monitor
 
-A **war-room news dashboard** for GitHub Pages. It aggregates **46 free RSS/Atom
-feeds** across four desks, ranks stories by importance, surfaces a real-time
-breaking corner + ticker, tracks coverage velocity, and paints maps red/blue where
-the news is hot. No API keys, no tracking, all client-side (with an optional
-server-side pre-fetch for reliability).
+A live news monitor built as an **installable iOS home-screen app** (and a full
+desktop dashboard from the same URL). It aggregates **28 free RSS/Atom feeds**
+across two desks, ranks stories by importance, flags breaking news, and heats a
+map where the news is happening. No accounts, no tracking, no API keys.
 
-![status](https://img.shields.io/badge/status-live-ff3b3b) · installable PWA · offline-capable
+## Two desks
 
-## Four desks
-
-| Desk | Watches | Map |
+| Desk | Sources | Map |
 |------|---------|-----|
-| **Global World** | BBC, Guardian, Al Jazeera, NPR, DW, France 24, CNN, Sky, Independent, CBC, Times of India, Euronews, AP & Reuters (Google News) | world (country heat, red) |
-| **US National** | NPR, The Hill, Politico, NYT, WaPo, CBS, ABC, NBC, USA Today, Guardian US, CNN, Fox, PBS + US wire | **US states** (state heat, blue) |
-| **AI News** | TechCrunch, VentureBeat, The Verge, Ars Technica, Wired, MIT Tech Review, The Register, Hacker News + Google News (AI / LLMs / policy) | world (cyan) |
-| **Good News** | Positive News, Good News Network, Reasons to be Cheerful, Optimist Daily + Google News (uplifting / breakthroughs / conservation) | world (green) |
+| **World** | BBC, Guardian, Al Jazeera, NPR, DW, France 24, CNN, Sky, Independent, CBC, Euronews, Times of India, AP, Reuters | world — country heat (red) |
+| **U.S.** | NPR, The Hill, Politico, NYT, Washington Post, CBS, ABC, NBC, USA Today, Guardian US, CNN, Fox, PBS, U.S. wire | 50 states + D.C. — state heat (blue) |
 
-Each desk has: importance-ranked stories, a breaking corner, a scrolling ticker,
-trending-entity chips, a 24h activity sparkline, and a clickable map that highlights
-the countries/states in the news.
+Each desk carries a breaking-news card, importance-ranked stories, trending
+entity chips, a search field, and a clickable density map. A third **Watch** tab
+holds the keyword watchlist, alert switch, live feed health, and sync status.
 
-## Intelligence
+## How stories are ranked
 
-- **Importance score** = urgency-keyword weight + recency + **cross-outlet corroboration** + **coverage velocity**.
-- **RISING ▲** — a story cluster that *gained a new outlet* since the last refresh (velocity), tracked in `localStorage`.
-- **`N× SOURCES ▾`** — click to expand the corroborating outlets and their headlines inline.
-- **Sentiment gate** — the Good News desk filters out stories that read as clearly negative.
-- **Trending entities** — curated org/people chips per desk (OpenAI, Supreme Court, NATO…), click to filter.
-- **Geo detection** — headlines are scanned against ~250 country aliases (world desks) or US state / city / DC aliases (US desk); matching regions glow proportionally to story volume.
+`importance = urgency language + recency + cross-outlet corroboration + coverage velocity`
 
-## War-room controls
+- **Rising** — a story cluster that gained a new outlet since the last refresh.
+- **`N sources`** — tap to expand every outlet carrying the same story.
+- **Watch** — pinned to the top of every desk, alert-eligible.
+- **New** — published since you last opened that desk.
+- Geo detection matches ~250 country aliases (World) or state/city/D.C. aliases (U.S.).
 
-- **🔔 Alerts** (opt-in) — sound + browser notification when a new CRITICAL story breaks or a **watchlist** keyword hits.
-- **★ Watchlist** — type a keyword; matching stories are pinned, flashed and alert-eligible.
-- **🔍 Search**, **NEW** badges (unseen since your last visit), per-story **dismiss (✕)**, live per-feed status chips, live UTC/local clock, 5-min auto-refresh.
-- **Installable PWA** with offline shell (service worker) — add it to a phone or a wall display.
+## Install on iPhone
 
-## Reliability: server-side pre-fetch + fallback
+1. Open the site in **Safari** (this must be Safari, not Chrome).
+2. Tap **Share** → **Add to Home Screen** → **Add**.
+3. Launch it from the Home Screen — it opens full-screen with no browser chrome,
+   its own launch screen, and works offline from cache.
 
-The page loads `data/feeds.json` first — a snapshot produced by a **GitHub Action**
-(`.github/workflows/feeds.yml`, every 10 min) that fetches and parses all feeds
-server-side, so there are no CORS/relay problems and the page paints instantly.
-If that file is missing or stale (>40 min), the page transparently **falls back**
-to fetching feeds through public CORS relays in the browser. Last-good data is
-cached in `localStorage`, so a reload during an outage shows the previous snapshot
-with a `CACHED` badge. The sync indicator reads **WIRE LIVE** (pre-fetch),
-**RELAY LIVE** (browser fallback), or **CACHED**.
+Built for iOS: safe-area layout for notch and home indicator, bottom tab bar,
+pull-to-refresh, native New York/SF Pro typography, and a status bar that blends
+into the app.
 
-> Scheduled Actions only run once the workflow lives on the repo's **default
-> branch**. Until then you still get full functionality via the browser fallback;
-> `workflow_dispatch` and pushes to this branch also trigger it.
+## Reliability
+
+A **GitHub Action** (`.github/workflows/feeds.yml`) fetches and parses every feed
+server-side each 10 minutes into `data/feeds.json`, so the app paints instantly
+with no CORS relays involved. If that snapshot is missing or stale, the app falls
+back to fetching feeds in-browser through public CORS relays. Last-good data is
+cached in `localStorage`. The status pill reads **Live** (pre-fetch), **Relay**
+(browser fallback), or **Cached**.
 
 ## Files
 
 ```
-index.html          markup + module wiring          engine-core.js  shared feeds + RSS/Atom parser (browser + Node)
-styles.css          war-room theme                   app.js          browser app (scoring, geo, UX, PWA)
-geo-world.js        world countries GeoJSON          geo-usa.js      US states GeoJSON (AK/HI as insets)
-manifest.webmanifest / sw.js / icon.svg              PWA + offline shell
-scripts/fetch-feeds.js         Node pre-fetcher      .github/workflows/feeds.yml   10-min cron
-data/feeds.json                pre-fetch output (generated by the Action)
+index.html            app shell, iOS meta, launch screens
+styles.css            design system
+app.js                desks, scoring, maps, interaction
+engine-core.js        shared feed list + RSS/Atom parser (browser + Node)
+geo-world.js          world countries      geo-usa.js   US states (AK/HI inset)
+sw.js                 offline shell        manifest.webmanifest
+scripts/fetch-feeds.js          server-side pre-fetch
+.github/workflows/feeds.yml     10-minute refresh
+data/feeds.json                 generated snapshot
 ```
 
-## Publish on GitHub Pages
+## Publish
 
-1. Push to your repo (merge to `main` to activate the scheduled pre-fetch).
-2. **Settings → Pages → Deploy from a branch** → choose the branch + `/ (root)` → **Save**.
-3. Open `https://<user>.github.io/<repo>/`.
+**Settings → Pages → Deploy from a branch → `main` / `(root)`.**
+Scheduled pre-fetch requires *Settings → Actions → General → Workflow permissions
+→ Read and write*.
