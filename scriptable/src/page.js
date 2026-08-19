@@ -7,13 +7,28 @@
 (function () {
 'use strict';
 
-/* bridge to Scriptable (evaluateJavaScript installs window.__emit) */
+/* Bridge to Scriptable. evaluateJavaScript() installs window.__emit; the first
+   time it does, we know the bridge is alive and can safely intercept taps.
+   If it never appears, links are left alone and simply open in the web view. */
+window.__bridge = window.__bridge || false;
+Object.defineProperty(window, '__emitInstalled', {
+  set: function (v){ window.__bridge = !!v; }, get: function (){ return window.__bridge; }
+});
+function bridgeAlive(){ return !!(window.__emit || window.__bridge); }
 function emit(action){
+  window.__bridge = true;
   if (window.__emit) window.__emit(action);
   else window.__queued = action;           // tapped between injections — queue it
 }
 
 const DATA = window.DATA, GEO = window.GEO;
+if (!DATA || !DATA.desks || !GEO){
+  document.body.innerHTML =
+    '<div style="padding:60px 26px;text-align:center;color:#97A1B2;' +
+    'font-family:-apple-system,sans-serif;font-size:14px;line-height:1.5">' +
+    'War Room could not read its data.<br>Tap Reload, or re-run the script.</div>';
+  throw new Error('missing payload');
+}
 const DESKS = DATA.order;
 let current = DESKS[0];
 const filters = {};
@@ -211,7 +226,12 @@ function renderStrip(){
 }
 
 /* ---------- nav ---------- */
-function setAccent(sec){ document.documentElement.style.setProperty('--accent', DATA.desks[sec].accent); }
+function setAccent(sec){
+  const a = DATA.desks[sec].accent, r = document.documentElement.style;
+  r.setProperty('--accent', a);
+  const c = a.replace('#',''); 
+  r.setProperty('--glow', 'rgba(' + parseInt(c.slice(0,2),16) + ',' + parseInt(c.slice(2,4),16) + ',' + parseInt(c.slice(4,6),16) + ',.09)');
+}
 function go(sec){
   if (sec === current) return;
   current = sec;
@@ -251,9 +271,11 @@ function init(){
   document.addEventListener('click', e => {
     const link = e.target.closest('[data-x]');
     if (link){
-      e.preventDefault();
       const href = link.getAttribute('href') || link.getAttribute('data-href');
-      if (href) emit({ type:'open', url:href });
+      if (!href) return;
+      if (!bridgeAlive()){ return; }        // no bridge: let it open in the web view
+      e.preventDefault();
+      emit({ type:'open', url:href });
       return;
     }
     const rl = e.target.closest('#reload');
@@ -283,5 +305,15 @@ function init(){
   renderStrip();
   $('clock').textContent = DATA.stamp;
 }
-init();
+try {
+  init();
+} catch (err){
+  const box = document.createElement('div');
+  box.setAttribute('style','padding:40px 24px;color:#97A1B2;font-family:-apple-system,sans-serif;' +
+    'font-size:13px;line-height:1.6;text-align:center');
+  box.innerHTML = 'War Room hit a rendering error.<br><br>' +
+    '<span style="font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#E5484D">' +
+    String(err && err.message || err).replace(/[&<>]/g, '') + '</span>';
+  (document.getElementById('main') || document.body).appendChild(box);
+}
 })();

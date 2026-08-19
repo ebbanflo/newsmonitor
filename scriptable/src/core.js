@@ -352,6 +352,12 @@ function stamp(ts){
   const d = new Date(ts);
   return d.toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
 }
+function jsonForScript(v){
+  return JSON.stringify(v)
+    .replace(/</g, '\\u003c')      // never let "</script>" terminate the tag
+    .replace(/\u2028/g, '\\u2028')  // line separators are illegal in older JS literals
+    .replace(/\u2029/g, '\\u2029');
+}
 function buildHTML(payload){
   const data = {
     order: payload.order, stamp: stamp(payload.generatedAt), desks: payload.desks
@@ -372,8 +378,25 @@ function buildHTML(payload){
     '<nav class="deskbar" id="deskbar"></nav>' +
     '<main id="main"></main>' +
     '<nav class="tabbar" id="tabbar"></nav>' +
-    '<script>window.DATA=' + JSON.stringify(data) + ';window.GEO=' + JSON.stringify(GEO) + ';<\/script>' +
+    '<script>window.DATA=' + jsonForScript(data) + ';window.GEO=' + jsonForScript(GEO) + ';<\/script>' +
     '<script>' + PAGE_JS + '<\/script></body></html>';
+}
+
+function buildSplash(msg){
+  return '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
+    '<style>' +
+    'html,body{margin:0;height:100%;background:#0A0C11;color:#EDF0F5;' +
+    '-webkit-font-smoothing:antialiased;font-family:-apple-system,BlinkMacSystemFont,sans-serif}' +
+    '.w{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}' +
+    '.m{width:56px;height:56px;border-radius:14px;border:2px solid #E5484D;display:flex;align-items:center;' +
+    'justify-content:center;box-shadow:0 0 40px rgba(229,72,77,.25)}' +
+    '.m i{width:12px;height:12px;border-radius:50%;background:#E5484D;animation:p 1.4s ease-in-out infinite}' +
+    '.t{font-size:13px;font-weight:680;letter-spacing:.18em;text-transform:uppercase}' +
+    '.s{font-family:ui-serif,Georgia,serif;font-style:italic;font-size:13px;color:#616B7C;text-align:center;padding:0 30px}' +
+    '@keyframes p{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(.7)}}' +
+    '</style></head><body><div class="w"><div class="m"><i></i></div>' +
+    '<div class="t">War Room</div><div class="s">' + msg + '</div></div></body></html>';
 }
 
 /* ============ WIDGET ============ */
@@ -464,45 +487,59 @@ const LISTEN =
   '})();';
 
 async function runApp(){
-  let payload;
-  try { payload = await getPayload(false); }
-  catch (e){
-    const a = new Alert();
-    a.title = 'War Room';
-    a.message = 'Could not load any feeds.\n\n' + e.message;
-    a.addAction('OK');
-    await a.present();
-    return;
-  }
-
   const wv = new WebView();
-  await wv.loadHTML(buildHTML(payload), 'https://warroom.local');
+  const BASE = 'https://warroom.local';
+
+  // Show something instantly — the first pull can take a few seconds on cellular.
+  try { await wv.loadHTML(buildSplash('Contacting 28 newsrooms…'), BASE); } catch (e){}
+
   let dismissed = false;
   const presented = wv.present(true);
   presented.then(function (){ dismissed = true; });
 
-  while (!dismissed){
-    let action = null;
-    try {
-      action = await Promise.race([
-        wv.evaluateJavaScript(LISTEN, true),
-        presented.then(function (){ return null; })
-      ]);
-    } catch (e){ break; }
-    if (!action || dismissed) break;
+  let payload = null, loadErr = null;
+  try { payload = await getPayload(false); }
+  catch (e){ loadErr = e; }
 
-    let a;
-    try { a = JSON.parse(action); } catch (e){ continue; }
-
-    if (a.type === 'open' && a.url){
-      await Safari.openInApp(a.url, false);
-    } else if (a.type === 'refresh'){
-      try {
-        payload = await getPayload(true);
-        await wv.loadHTML(buildHTML(payload), 'https://warroom.local');
-      } catch (e){ /* keep showing what we have */ }
-    }
+  if (payload){
+    try { await wv.loadHTML(buildHTML(payload), BASE); } catch (e){ loadErr = e; }
   }
+  if (!payload){
+    try {
+      await wv.loadHTML(buildSplash('Could not reach any feeds.<br>' +
+        'Check your connection and tap Reload.<br><br>' +
+        String(loadErr && loadErr.message || '')), BASE);
+    } catch (e){}
+  }
+
+  // Action pump. Runs alongside the presentation; if the bridge is unavailable
+  // the app still works (links simply open inside the web view instead).
+  (async function pump(){
+    while (!dismissed){
+      let raw = null;
+      try { raw = await wv.evaluateJavaScript(LISTEN, true); }
+      catch (e){ return; }                 // no bridge — degrade, never tear down
+      if (raw === null || raw === undefined || dismissed) return;
+      let a = null;
+      try { a = JSON.parse(raw); } catch (e){ continue; }
+      if (!a || !a.type) continue;
+      if (a.type === 'open' && a.url){
+        try { await Safari.openInApp(a.url, false); } catch (e){}
+      } else if (a.type === 'refresh'){
+        try {
+          const p = await getPayload(true);
+          payload = p;
+          await wv.loadHTML(buildHTML(p), BASE);
+        } catch (e){
+          try { await wv.evaluateJavaScript('document.getElementById("reload")&&document.getElementById("reload").classList.remove("busy")'); } catch (e2){}
+        }
+      }
+    }
+  })();
+
+  // The presentation governs how long the script lives. Completing while the
+  // view is still up would dismiss it and leave a black screen.
+  await presented;
   Script.complete();
 }
 
@@ -520,5 +557,15 @@ async function runWidget(){
 if (config.runsInWidget) {
   await runWidget();
 } else {
-  await runApp();
+  try {
+    await runApp();
+  } catch (e){
+    const al = new Alert();
+    al.title = 'War Room — error';
+    al.message = String((e && (e.message || e)) || 'unknown') +
+      '\n\nPlease send this text along with your iOS version.';
+    al.addAction('OK');
+    await al.present();
+    Script.complete();
+  }
 }
