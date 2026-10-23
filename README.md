@@ -37,6 +37,13 @@ Built for iOS: safe-area layout for notch and home indicator, bottom tab bar,
 pull-to-refresh, native New York/SF Pro typography, and a status bar that blends
 into the app.
 
+## Run it entirely in Scriptable (iOS, no server)
+
+There is also a **fully self-contained Scriptable build** — one file, no web host,
+no Action, no CORS relays, because Scriptable fetches the feeds natively. It gives
+you the same app plus a Home Screen **widget**.
+See [`scriptable/README.md`](scriptable/README.md).
+
 ## Reliability
 
 A **GitHub Action** (`.github/workflows/feeds.yml`) fetches and parses every feed
